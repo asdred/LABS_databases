@@ -1,0 +1,14 @@
+#container-search {
+    width: 30%;
+    border: 1px solid black;
+    margin: 5% auto;
+    background-color: cornflowerblue;
+}
+
+#container-search input {
+    margin: 3% auto 3% auto;
+}
+
+.results {
+    border: 1px solid black;
+}

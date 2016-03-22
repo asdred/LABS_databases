@@ -11,7 +11,6 @@
         <h3>Таблицы:</h3>
             
         <?php 
-            
         try {
             $user = 'postgres';  
             $pass = 'admin';  

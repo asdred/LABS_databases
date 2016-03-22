@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>ТП. Лабораторная 1.</title>
+        <title>БД. Лабораторная 1.</title>
         <link type="text/css" rel="stylesheet" href="css/table.css"/>
         <link type="text/css" rel="stylesheet" href="css/index.css"/>
     </head>
@@ -10,6 +10,9 @@
     <nav id="menu">
         <a href="http://db.lab1.dev/">
             <button class="submit">На главную</button>
+        </a>
+        <a href="http://db.lab1.dev/search.php?t=<?php echo $_GET['t'] ?>">
+            <button class="submit">Поиск</button>
         </a>
     </nav>
     <table class="simple-little-table">
