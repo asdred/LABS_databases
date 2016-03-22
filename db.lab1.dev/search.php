@@ -14,13 +14,26 @@
             </a>
         </nav>
         <div id="container-search">
+            <p>выберите что-нибудь здесь:</p>
+            <select style="width: 80%" onchange="select()">
+                <option>Наименование самого тяжелого товара</option>
+                <option>Названия складов, в которые перевозят товары все автомобили</option>
+                <option>Названия складов и марки автомобилей, у которых владелец один и тот же</option>
+                <option>Наименования товаров, которые не перевозит указанный автомобиль</option>
+                <option>Названия складов, в которые перевозятся все товары</option>
+                <option>Названия автомобилей, которые перевозят товары в те же склады, что и указанный автомобиль</option>
+            </select>
+            <p>или введите что-нибудь в поле ниже</p>
             <input type="text" oninput="search()"></input>
-            <button onclick="run()">Найти</button>
         </div>
         <div class="results">
-            <p>Ждём ответа</p>
+            <p>Введите что-нибудь в поле выше</p>
         </div>
         <script>
+            function select() {
+                alert("adas");   
+            }
+            
             function search() {
                 var search_string = document.getElementsByTagName('input')[0].value;
                 var table = <?php echo "'" . $_GET['t'] . "'" ?>;
