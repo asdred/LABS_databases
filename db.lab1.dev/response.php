@@ -148,36 +148,33 @@
     
         //echo $query;
     
-    try {
-        $user = 'postgres';  
-        $pass = 'admin';  
-        $host = 'localhost';  
-        $db='databases';  
-        $dbh = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
-    } catch (PDOException $e) {  
-        echo "Error!: " . $e->getMessage() . "<br/>";  
-        die();  
-    }
+        try {
+            $user = 'postgres';  
+            $pass = 'admin';  
+            $host = 'localhost';  
+            $db='databases';  
+            $dbh = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
+        } catch (PDOException $e) {  
+            echo "Error!: " . $e->getMessage() . "<br/>";  
+            die();  
+        }
 
-    $columns = $dbh->query("SELECT column_name FROM information_schema.columns WHERE table_name = '{$table}'");
-    $columns->setFetchMode(PDO::FETCH_ASSOC);
-    
-    $columns_array = array();
+        $columns = $dbh->query("SELECT column_name FROM information_schema.columns WHERE table_name = '{$table}'");
+        $columns->setFetchMode(PDO::FETCH_ASSOC);
 
-    while($col = $columns->fetch()) {
-        array_push($columns_array, $col['column_name']);
-        
-        echo '<th>' . $col['column_name'] . '</th>';
-    }
-                            
-?>
-                
-        </tr>
-    </thead>
-    <tbody>
-    
-<?php
-    
+        $columns_array = array();
+
+        while($col = $columns->fetch()) {
+            array_push($columns_array, $col['column_name']);
+
+            echo '<th>' . $col['column_name'] . '</th>';
+        }
+
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
+
+
         $sth = $dbh->query($query);
         $sth->setFetchMode(PDO::FETCH_ASSOC);  
 
@@ -191,6 +188,119 @@
             echo '</tr>';  
         }
 
+        $dbh = null;
+        
+    } elseif (isset($_POST['selected_query'])) {
+        
+        $selected_query = $_POST['selected_query'];
+        $truck = $_POST['truck'];
+        
+        switch($selected_query) {
+            case 1:
+                $columns_array = array("name","weight");
+                $query = "SELECT name, weight FROM product WHERE weight IN (SELECT max(weight) FROM product);";
+                break;
+            case 2:
+                $columns_array = array("name");
+                $query = "SELECT store.name FROM store WHERE store.number 
+                            IN 
+                            (
+                                SELECT number_store FROM 
+                                (
+                                    SELECT count(DISTINCT number_auto), number_store FROM shipment GROUP BY number_store
+                                ) as sub 
+                                WHERE count 
+                                IN 
+                                (
+                                    SELECT count(number) FROM truck
+                                )
+                            );";
+                break;
+            case 3:
+                $columns_array = array("model","name","owner");
+                $query = "SELECT truck.model, store.name, store.owner FROM store, truck WHERE store.owner=truck.owner;";
+                break;
+            case 4:
+                $columns_array = array("name");
+                $query = "SELECT product.name FROM product WHERE product.code 
+                            NOT IN 
+                                (
+                                    SELECT product.code FROM product, shipment WHERE product.code=shipment.code_product 
+                                    AND 
+                                    shipment.number_auto 
+                                    IN 
+                                        (
+                                            SELECT truck.number FROM truck WHERE truck.model LIKE '%{$truck}%'
+                                        )
+                                );";
+                break;
+            case 5:
+                $columns_array = array("name");
+                $query = "SELECT store.name FROM store WHERE store.number 
+                          IN 
+                              (
+                                  SELECT number_store FROM 
+                                      (
+                                          SELECT number_store, count(DISTINCT code_product) FROM shipment GROUP BY number_store
+                                      ) as sub 
+                                  WHERE count 
+                                  IN 
+                                      (
+                                          SELECT count(code) FROM product
+                                      )
+                              );";
+                break;
+            case 6:
+                $columns_array = array("number_auto");
+                $query = "SELECT number_auto 
+                          FROM 
+                              (
+                                  SELECT DISTINCT number_auto, COUNT(*) AS c FROM shipment WHERE number_store 
+                                  IN 
+                                      (
+                                          SELECT number_store FROM shipment WHERE number_auto = {$truck}
+                                      ) 
+                                  GROUP BY 1
+                               ) as sub 
+                          WHERE c >= 
+                               (
+                                   SELECT count(number_store) FROM shipment WHERE number_auto = {$truck}
+                               );";
+                break;
+        }
+        
+        try {
+            $user = 'postgres';  
+            $pass = 'admin';  
+            $host = 'localhost';  
+            $db='databases';  
+            $dbh = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
+        } catch (PDOException $e) {  
+            echo "Error!: " . $e->getMessage() . "<br/>";  
+            die();  
+        }
+        
+        foreach($columns_array as $col) {
+            echo '<th>' . $col . '</th>';
+        }
+        
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
+        
+        $sth = $dbh->query($query);
+        $sth->setFetchMode(PDO::FETCH_ASSOC);  
+        
+        while($row = $sth->fetch()) {
+            echo '<tr>';
+
+            foreach ($columns_array as $column_name) {
+                echo '<td>' . $row[$column_name] . '</td>';
+            }
+
+            echo '</tr>';  
+        }
+        
         $dbh = null;
     }
 ?>

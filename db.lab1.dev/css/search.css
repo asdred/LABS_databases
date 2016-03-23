@@ -12,3 +12,7 @@
 .results {
     border: 1px solid black;
 }
+
+#s {
+    width: 80%;
+}
