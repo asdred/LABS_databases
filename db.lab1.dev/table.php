@@ -68,23 +68,21 @@
     $rows_count = $rows_count_query->fetch()['count'];
     $page_count = $rows_count / 10; 
 
-    $columns = $dbh->query("SELECT column_name FROM information_schema.columns WHERE table_name = '{$table}'");
-    $columns->setFetchMode(PDO::FETCH_ASSOC);
-    
-    $columns_array = array();
+    if ($table == 'shipment') {
+        $columns_array = array("name", "model", "name", "amount");
+        foreach ($columns_array as $column_name) {
+            echo '<th>' . $column_name . '</th>';
+        }
+    } else {
+        $columns = $dbh->query("SELECT column_name FROM information_schema.columns WHERE table_name = '{$table}'");
+        $columns->setFetchMode(PDO::FETCH_ASSOC);
 
-    while($col = $columns->fetch()) {
-        //if ($col['column_name'] == 'deleted') continue;
-        array_push($columns_array, $col['column_name']);
-        
-        echo '<th>' . $col['column_name'] . '</th>';
-        /*
-        if (strpos($col['column_name'], 'id') !== false or strpos($col['column_name'], 'deleted') !== false) {
-                echo '<th hidden="true">' . $col['column_name'] . '</th>';
-            } else {
-                echo '<th>' . $col['column_name'] . '</th>';
-            }
-        */
+        $columns_array = array();
+
+        while($col = $columns->fetch()) {
+            array_push($columns_array, $col['column_name']);
+            echo '<th>' . $col['column_name'] . '</th>';
+        }
     }
                             
     ?>
@@ -96,24 +94,18 @@
     <?php
 
     // отладка
-    //echo "SELECT " . implode(', ',$columns_array) . " FROM {$table}";
-    
-    $sth = $dbh->query("SELECT " . implode(', ',$columns_array) . " FROM {$table} ORDER BY {$id_name} LIMIT 10 OFFSET " . (($page * 10) - 10));
+    if ($table == 'shipment') {
+        $sth = $dbh->query("select product.name, model, store.name, amount from product, shipment, store, truck where product.code=shipment.code_product and store.number=shipment.number_store and truck.number=shipment.number_auto LIMIT 10 OFFSET " . (($page * 10) - 10));
+    } else {
+        $sth = $dbh->query("SELECT " . implode(', ',$columns_array) . " FROM {$table} ORDER BY {$id_name} LIMIT 10 OFFSET " . (($page * 10) - 10)); 
+    }
     $sth->setFetchMode(PDO::FETCH_ASSOC);  
   
     while($row = $sth->fetch()) {
         echo '<tr onclick="count(this)">';
         
         foreach ($columns_array as $column_name) {
-            
             echo '<td>' . $row[$column_name] . '</td>';
-            /*
-            if (strpos($column_name, 'id') !== false or strpos($column_name, 'deleted') !== false) {
-                echo '<td hidden="true">' . $row[$column_name] . '</td>';
-            } else {
-                echo '<td>' . $row[$column_name] . '</td>';
-            }
-            */
         }
         
         echo '</tr>';  
