@@ -16,6 +16,7 @@
                     name LIKE '%{$search_string}%' 
                 OR 
                     type LIKE '%{$search_string}%'
+                LIMIT 10
                 ;";
             } else {
                 $query = "
@@ -32,6 +33,7 @@
                     code={$search_string} 
                 OR 
                     weight={$search_string}
+                LIMIT 10
                 ;";
             }
         } elseif ($table == "shipment") {
@@ -60,7 +62,9 @@
                         model LIKE '%{$search_string}%' 
                     OR 
                         store.name LIKE '%{$search_string}%'
-                    )";
+                    )
+                LIMIT 10
+                ;";
             } else {
                 $query = "
                 SELECT 
@@ -91,7 +95,9 @@
                         model LIKE '%{$search_string}%' 
                     OR 
                         store.name LIKE '%{$search_string}%'
-                    )";
+                    )
+                LIMIT 10
+                ;";
             }
         } elseif ($table == "store") {
             if (((int) $search_string) == 0) {
@@ -102,6 +108,7 @@
                     name LIKE '%{$search_string}%' 
                 OR 
                     owner LIKE '%{$search_string}%'
+                LIMIT 10
                 ;";
             } else {
                 $query = "
@@ -116,6 +123,7 @@
                 FROM store 
                 WHERE 
                     number={$search_string}
+                LIMIT 10
                 ;";
             }
         } elseif ($table == "truck") {
@@ -127,6 +135,7 @@
                     model LIKE '%{$search_string}%' 
                 OR 
                     owner LIKE '%{$search_string}%'
+                LIMIT 10
                 ;";
             } else {
                 $query = "SELECT * 
@@ -142,6 +151,7 @@
                     number={$search_string} 
                 OR 
                     capacity={$search_string}
+                LIMIT 10
                 ;";
             }
         }
@@ -214,11 +224,13 @@
                                 (
                                     SELECT count(number) FROM truck
                                 )
-                            );";
+                            )
+                          LIMIT 10
+                          ;";
                 break;
             case 3:
                 $columns_array = array("model","name","owner");
-                $query = "SELECT truck.model, store.name, store.owner FROM store, truck WHERE store.owner=truck.owner;";
+                $query = "SELECT truck.model, store.name, store.owner FROM store, truck WHERE store.owner=truck.owner LIMIT 10;";
                 break;
             case 4:
                 $columns_array = array("name");
@@ -232,7 +244,9 @@
                                         (
                                             SELECT truck.number FROM truck WHERE truck.model LIKE '%{$truck}%'
                                         )
-                                );";
+                                )
+                          LIMIT 10  
+                          ;";
                 break;
             case 5:
                 $columns_array = array("name");
@@ -248,7 +262,9 @@
                                       (
                                           SELECT count(code) FROM product
                                       )
-                              );";
+                              )
+                          LIMIT 10
+                          ;";
                 break;
             case 6:
                 $columns_array = array("number_auto");
@@ -265,7 +281,9 @@
                           WHERE c >= 
                                (
                                    SELECT count(number_store) FROM shipment WHERE number_auto = {$truck}
-                               );";
+                               )
+                          LIMIT 10
+                          ;";
                 break;
         }
         

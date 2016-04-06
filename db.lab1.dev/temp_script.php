@@ -5,6 +5,15 @@
 </form>
 <p>
 <?php
+    function generateString(){
+        $chars = 'абвгдеёжзиклмнопрстуфхцчшщыэюя';
+        $string = '';
+        for ($i = 0; $i < rand(3, 8); $i++) {
+            $string .= mb_substr($chars, rand(0, 29), 1, "UTF-8");
+        }
+        return $string;
+    }
+    
     if($_POST['number'] != "" && $_POST['add'] == "1") {
         
         try {
@@ -18,21 +27,20 @@
             die();  
         }
         
+        $types = array("песок", "жидкость", "стройматериал", "пиломатериал", "металлоконструкция");
+        
         for($i = 0; $i < $_POST['number']; $i++) {
         
-            $code_product_rand_val = rand(1,10);
-            $number_auto_rand_val = rand(1,10);
-            $number_store_rand_val = rand(1,10);
-            $amount_rand_val = rand(1,20);
+            $name_rand_val = generateString();
+            $weight_rand_val = rand(500,2000);
+            $type_rand_val = $types[rand(0,4)];
             
-            //echo $code_product_rand_val." ";
-            //echo $number_auto_rand_val." ";
-            //echo $number_store_rand_val." ";
-            //echo $amount_rand_val." "."<br>";
+            //echo $name_rand_val." ";
+            //echo $weight_rand_val." ";
+            //echo $type_rand_val." "."<br>";
             
-            $query = "INSERT INTO shipment (code_product, number_auto, number_store, amount) VALUES ({$code_product_rand_val}, {$number_auto_rand_val}, {$number_store_rand_val}, {$amount_rand_val});";
-            //echo ($i+1) . " запись добавлена<br>";
-        
+            $query = "INSERT INTO product (name, weight, type) VALUES ('{$name_rand_val}', {$weight_rand_val}, '{$type_rand_val}');";
+            
             $sth = $dbh->prepare($query);  
             $sth->execute();
         }

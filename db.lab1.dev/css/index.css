@@ -18,6 +18,10 @@ a {
     border-bottom: 3px solid lightgray;
 }
 
+#menu div {
+    
+}
+
 /* Button Style */
 button.submit {
     display: inline-block;

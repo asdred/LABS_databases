@@ -17,39 +17,47 @@
                 <ul>
                     
                 <?php
-                    
-                try {
-                    $user = 'postgres';  
-                    $pass = 'admin';  
-                    $host = 'localhost';  
-                    $db='databases';  
-                    $dbh = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
-                } catch (PDOException $e) {  
-                    echo "Error!: " . $e->getMessage() . "<br/>";  
-                    die();  
-                }
                 
-                $table = $_GET['t'];
-                $id = $_GET['i'];
-           
-                // разные названия у первичных ключей
-                if ($table == "product") {
-                    $id_name = "code";
-                } elseif ($table == "shipment") {
-                    $id_name = "id";
-                } elseif ($table == "store") {
-                    $id_name = "number";
-                } elseif ($table == "truck") {
-                    $id_name = "number";
-                }
+                session_start();
                 
-                $columns = $dbh->query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{$table}'");
-                $columns->setFetchMode(PDO::FETCH_ASSOC);
-                
-                $columns_array = array();
-                $types_array = array();
+                if (!isset($_SESSION['userlogin'])) {
+                    header("Location: http://db.lab1.dev/auth_form.php");
+                } elseif ($_SESSION['usergroup'] == "guest" || $_SESSION['usergroup'] == "user") {
+                    header("HTTP/1.1 403 Unauthorized" );
+                    echo "Отказано в доступе";
+                } else {
+                    try {
+                        $user = 'postgres';  
+                        $pass = 'admin';  
+                        $host = 'localhost';  
+                        $db='databases';  
+                        $dbh = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
+                    } catch (PDOException $e) {  
+                        echo "Error!: " . $e->getMessage() . "<br/>";  
+                        die();  
+                    }
 
-                while($col = $columns->fetch()) {
+                    $table = $_GET['t'];
+                    $id = $_GET['i'];
+
+                    // разные названия у первичных ключей
+                    if ($table == "product") {
+                        $id_name = "code";
+                    } elseif ($table == "shipment") {
+                        $id_name = "id";
+                    } elseif ($table == "store") {
+                        $id_name = "number";
+                    } elseif ($table == "truck") {
+                        $id_name = "number";
+                    }
+
+                    $columns = $dbh->query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{$table}'");
+                    $columns->setFetchMode(PDO::FETCH_ASSOC);
+
+                    $columns_array = array();
+                    $types_array = array();
+
+                    while($col = $columns->fetch()) {
                     
                     // Начало не универсального кода
                     /*
@@ -87,40 +95,46 @@
                     */
                     // Конец не универсального кода
                     
-                    array_push($columns_array, $col['column_name']);
-                    array_push($types_array, $col['data_type']);
+                        array_push($columns_array, $col['column_name']);
+                        array_push($types_array, $col['data_type']);
 
-                    if($col['data_type'] == 'character varying') $input_type = 'text';
-                    else if ($col['data_type'] == 'integer') $input_type = 'number';
+                        if($col['data_type'] == 'character varying') $input_type = 'text';
+                        else if ($col['data_type'] == 'integer') $input_type = 'number';
 
-                    echo '<li>';
-                    echo '<label for="' . $col['column_name'] . '">' . $col['column_name'] . '</label>';
-                    echo '<input id="' . $col['column_name'] . '" type="' . $input_type . '" name="' . $col['column_name'] . '" placeholder="' . $col['column_name']. '" required/>';
-                    echo '<span class="form_hint">Proper format "' . $col['data_type'] . '"</span>';
-                    echo '</li>';
-                }
-                
-                $values = $dbh->query("SELECT " . implode(', ',$columns_array) . " FROM " . $table . " WHERE {$id_name}=" . $id);
-                $values->setFetchMode(PDO::FETCH_ASSOC);
-                
-                $val = $values->fetch();
-                foreach($columns_array as $column_name) {
-                    echo '<script>';
-                    echo "document.getElementById('" . $column_name . "').value = '" . $val[ $column_name ] . "';";
-                    echo '</script>';
-                }
-           
-                $dbh = null;
-                  
-                // Не универсальный код
-                    
-                ?>
+                        echo '<li>';
+                        echo '<label for="' . $col['column_name'] . '">' . $col['column_name'] . '</label>';
+                        echo '<input id="' . $col['column_name'] . '" type="' . $input_type . '" name="' . $col['column_name'] . '" placeholder="' . $col['column_name']. '" required/>';
+                        echo '<span class="form_hint">Proper format "' . $col['data_type'] . '"</span>';
+                        echo '</li>';
+                    }
+
+                    $values = $dbh->query("SELECT " . implode(', ',$columns_array) . " FROM " . $table . " WHERE {$id_name}=" . $id);
+                    $values->setFetchMode(PDO::FETCH_ASSOC);
+
+                    $val = $values->fetch();
+                    foreach($columns_array as $column_name) {
+                        echo '<script>';
+                        echo "document.getElementById('" . $column_name . "').value = '" . $val[ $column_name ] . "';";
+                        echo '</script>';
+                    }
+
+                    $dbh = null;
+
+                    // Не универсальный код
+
+                    ?>
                     <li>
                         <button class="submit" type="submit" name="ut" value="<?php echo $table ?>">Изменить</button>
                     </li>
+                    <?php if ($_SESSION['usergroup'] != "user") { ?> 
                     <li>
                         <button id="del" class="submit" type="submit" name="dt" value="<?php echo $table ?>">Удалить</button>
-                    </li>
+                    </li> 
+                    <?php } 
+                    
+                    }
+                    
+                    ?>
                 </ul>
             </form>
         </div>

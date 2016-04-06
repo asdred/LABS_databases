@@ -9,6 +9,13 @@
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     </head>
     <body>
+        <?php 
+        session_start();
+        
+        if (!isset($_SESSION['userlogin'])) {
+            header("Location: http://db.lab1.dev/auth_form.php");
+        }
+        ?>
         <nav id="menu">
             <a href="http://db.lab1.dev/">
                 <button class="submit">На главную</button>
